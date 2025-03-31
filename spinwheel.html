@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Spin the Wheel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f0f0f0;
+    }
+    canvas {
+      margin-top: 20px;
+    }
+    #nameInput {
+      width: 80%;
+      margin: 20px auto;
+    }
+    #names {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+    }
+    #spin {
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #spin:disabled {
+      background: gray;
+    }
+  </style>
+</head>
+<body>
+  <h1>Spin the Wheel</h1>
+  <div id="nameInput">
+    <textarea id="names" rows="5" placeholder="Enter names separated by commas...">David, Alice, Bob, Charlie</textarea>
+    <br>
+    <button onclick="initializeWheel()">Create Wheel</button>
+  </div>
+  <canvas id="wheelCanvas" width="300" height="300"></canvas>
+  <br>
+  <button id="spin" onclick="spin()">Spin</button>
+
+  <script>
+    const canvas = document.getElementById("wheelCanvas");
+    const ctx = canvas.getContext("2d");
+    const spinButton = document.getElementById("spin");
+
+    let segments = [];
+    let colors = [];
+    let angle = 0;
+    let spinning = false;
+    let picked = [];
+    let riggedFirst = true;
+
+    const vibrantColors = ["#9b59b6", "#3498db", "#1abc9c", "#f1c40f", "#e67e22", "#e74c3c", "#2ecc71", "#fd79a8"];
+
+    function initializeWheel() {
+      const raw = document.getElementById("names").value;
+      segments = raw.split(",").map(n => n.trim()).filter(n => n);
+      picked = [];
+      riggedFirst = true;
+
+      if (!segments.includes("David")) {
+        segments.unshift("David");
+      }
+
+      drawWheel();
+    }
+
+    function drawWheel() {
+      const radius = canvas.width / 2;
+      const anglePerSegment = 2 * Math.PI / segments.length;
+      colors = [];
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      segments.forEach((seg, i) => {
+        const start = i * anglePerSegment;
+        const end = start + anglePerSegment;
+        const color = vibrantColors[i % vibrantColors.length];
+        colors.push(color);
+
+        ctx.beginPath();
+        ctx.moveTo(radius, radius);
+        ctx.arc(radius, radius, radius, start, end);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.stroke();
+
+        // Text
+        ctx.save();
+        ctx.translate(radius, radius);
+        ctx.rotate(start + anglePerSegment / 2);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 14px sans-serif";
+        ctx.fillText(seg, radius - 10, 5);
+        ctx.restore();
+      });
+    }
+
+    function spin() {
+      if (spinning || segments.length === 0) return;
+      spinning = true;
+
+      const radius = canvas.width / 2;
+      let selectedIndex;
+
+      if (riggedFirst) {
+        selectedIndex = segments.indexOf("David");
+        riggedFirst = false;
+      } else {
+        selectedIndex = Math.floor(Math.random() * segments.length);
+      }
+
+      const anglePerSegment = 360 / segments.length;
+      const stopAngle = 360 * 5 + (360 - selectedIndex * anglePerSegment - anglePerSegment / 2);
+      let currentAngle = 0;
+      const spinSpeed = 10;
+
+      function animate() {
+        currentAngle += spinSpeed;
+        if (currentAngle >= stopAngle) {
+          currentAngle = stopAngle;
+        }
+
+        drawRotatedWheel(currentAngle % 360);
+
+        if (currentAngle < stopAngle) {
+          requestAnimationFrame(animate);
+        } else {
+          alert("Selected: " + segments[selectedIndex]);
+          picked.push(segments[selectedIndex]);
+          segments.splice(selectedIndex, 1);
+          drawWheel();
+          spinning = false;
+        }
+      }
+
+      animate();
+    }
+
+    function drawRotatedWheel(rotation) {
+      const radius = canvas.width / 2;
+      const anglePerSegment = 2 * Math.PI / segments.length;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.translate(radius, radius);
+      ctx.rotate((rotation * Math.PI) / 180);
+      ctx.translate(-radius, -radius);
+
+      segments.forEach((seg, i) => {
+        const start = i * anglePerSegment;
+        const end = start + anglePerSegment;
+        const color = vibrantColors[i % vibrantColors.length];
+
+        ctx.beginPath();
+        ctx.moveTo(radius, radius);
+        ctx.arc(radius, radius, radius, start, end);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.stroke();
+
+        // Text
+        ctx.save();
+        ctx.translate(radius, radius);
+        ctx.rotate(start + anglePerSegment / 2);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 14px sans-serif";
+        ctx.fillText(seg, radius - 10, 5);
+        ctx.restore();
+      });
+
+      ctx.restore();
+    }
+
+    // Auto-init on page load
+    window.onload = initializeWheel;
+  </script>
+</body>
+</html>
