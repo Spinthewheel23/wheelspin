@@ -39,6 +39,9 @@
   </style>
 </head>
 <body>
+  <!-- Invisible space at top -->
+  <div style="height: 100px;"></div>
+
   <h1>Spin the Wheel</h1>
   <div id="nameInput">
     <textarea id="names" rows="5" placeholder="Enter names separated by commas...">David, Alice, Bob, Charlie</textarea>
@@ -48,6 +51,9 @@
   <canvas id="wheelCanvas" width="300" height="300"></canvas>
   <br>
   <button id="spin" onclick="spin()">Spin</button>
+
+  <!-- Invisible space at bottom -->
+  <div style="height: 200px;"></div>
 
   <script>
     const canvas = document.getElementById("wheelCanvas");
@@ -96,7 +102,6 @@
         ctx.fill();
         ctx.stroke();
 
-        // Text
         ctx.save();
         ctx.translate(radius, radius);
         ctx.rotate(start + anglePerSegment / 2);
@@ -171,7 +176,6 @@
         ctx.fill();
         ctx.stroke();
 
-        // Text
         ctx.save();
         ctx.translate(radius, radius);
         ctx.rotate(start + anglePerSegment / 2);
@@ -185,7 +189,6 @@
       ctx.restore();
     }
 
-    // Auto-init on page load
     window.onload = initializeWheel;
   </script>
 </body>
